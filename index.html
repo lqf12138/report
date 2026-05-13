@@ -1,142 +1,626 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SeaTable 数据提交</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: Arial, sans-serif;
-        }
-        body {
-            max-width: 600px;
-            margin: 50px auto;
-            padding: 0 20px;
-            background: #f5f5f5;
-        }
-        .container {
-            background: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        h2 {
-            text-align: center;
-            margin-bottom: 25px;
-            color: #333;
-        }
-        .form-group {
-            margin-bottom: 20px;
-        }
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: bold;
-            color: #555;
-        }
-        input, textarea {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 16px;
-        }
-        textarea {
-            min-height: 100px;
-            resize: vertical;
-        }
-        button {
-            width: 100%;
-            padding: 14px;
-            background: #0070e0;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            font-size: 16px;
-            cursor: pointer;
-            transition: background 0.3s;
-        }
-        button:hover {
-            background: #005bb5;
-        }
-        .message {
-            margin-top: 20px;
-            padding: 15px;
-            border-radius: 5px;
-            text-align: center;
-            display: none;
-        }
-        .success {
-            background: #d4edda;
-            color: #155724;
-            display: block;
-        }
-        .error {
-            background: #f8d7da;
-            color: #721c24;
-            display: block;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>芯片前沿演讲活动报名</title>
+  <meta
+    name="description"
+    content="聚焦芯片架构、先进封装与产业落地的一次技术演讲活动。页面支持在线报名，并将报名信息写入 SeaTable。"
+  >
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&family=Noto+Sans+SC:wght@400;500;700&display=swap"
+    rel="stylesheet"
+  >
+  <style>
+    :root {
+      --bg: #07111f;
+      --bg-soft: #0d1c31;
+      --panel: rgba(8, 20, 36, 0.76);
+      --panel-strong: rgba(10, 24, 42, 0.94);
+      --line: rgba(142, 188, 255, 0.22);
+      --text: #eef4ff;
+      --muted: #9fb3cf;
+      --accent: #79f0ff;
+      --accent-strong: #00c7ff;
+      --warm: #ffd166;
+      --success: #9ef0b1;
+      --error: #ff9f9f;
+      --shadow: 0 24px 80px rgba(0, 0, 0, 0.38);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(0, 199, 255, 0.22), transparent 32%),
+        radial-gradient(circle at 85% 15%, rgba(255, 209, 102, 0.16), transparent 28%),
+        linear-gradient(180deg, #04101b 0%, #091726 52%, #030914 100%);
+      font-family: "IBM Plex Sans", "Noto Sans SC", sans-serif;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background-image:
+        linear-gradient(rgba(121, 240, 255, 0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(121, 240, 255, 0.04) 1px, transparent 1px);
+      background-size: 28px 28px;
+      mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.9), transparent 90%);
+    }
+
+    .page {
+      width: min(1180px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 32px 0 56px;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1.15fr) minmax(320px, 0.85fr);
+      gap: 24px;
+      align-items: stretch;
+    }
+
+    .panel {
+      position: relative;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 28px;
+      background: var(--panel);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(16px);
+    }
+
+    .panel::after {
+      content: "";
+      position: absolute;
+      inset: auto -10% -40% auto;
+      width: 260px;
+      height: 260px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(0, 199, 255, 0.22), transparent 70%);
+      pointer-events: none;
+    }
+
+    .hero-copy {
+      padding: 36px;
+      display: grid;
+      gap: 24px;
+      animation: rise 720ms ease forwards;
+    }
+
+    .eyebrow,
+    .chip-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      width: fit-content;
+      padding: 10px 14px;
+      border-radius: 999px;
+      border: 1px solid rgba(121, 240, 255, 0.26);
+      background: rgba(5, 15, 28, 0.76);
+      color: var(--accent);
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 13px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 0;
+      max-width: 12ch;
+      font-size: clamp(2.7rem, 7vw, 5.4rem);
+      line-height: 0.96;
+      letter-spacing: -0.05em;
+    }
+
+    .subtitle {
+      max-width: 56ch;
+      margin: 0;
+      color: var(--muted);
+      font-size: 1.06rem;
+      line-height: 1.8;
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .stat {
+      padding: 18px;
+      border-radius: 20px;
+      border: 1px solid rgba(121, 240, 255, 0.15);
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .stat strong {
+      display: block;
+      margin-bottom: 8px;
+      color: var(--warm);
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 0.95rem;
+    }
+
+    .stat span {
+      color: var(--text);
+      font-size: 0.98rem;
+      line-height: 1.6;
+    }
+
+    .bullet-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .bullet-row span {
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.05);
+      color: #d8e3f8;
+      font-size: 0.95rem;
+    }
+
+    .registration {
+      padding: 28px;
+      background:
+        linear-gradient(180deg, rgba(11, 27, 45, 0.96), rgba(6, 14, 26, 0.98));
+      animation: rise 860ms ease forwards;
+    }
+
+    .registration h2,
+    .section h2 {
+      margin: 0 0 10px;
+      font-size: 1.55rem;
+      letter-spacing: -0.03em;
+    }
+
+    .registration p,
+    .section-intro,
+    .fine-print {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.75;
+    }
+
+    form {
+      margin-top: 22px;
+      display: grid;
+      gap: 16px;
+    }
+
+    .field {
+      display: grid;
+      gap: 8px;
+    }
+
+    .field label {
+      color: #d5e3fb;
+      font-size: 0.96rem;
+      font-weight: 600;
+    }
+
+    .field input,
+    .field textarea {
+      width: 100%;
+      border: 1px solid rgba(142, 188, 255, 0.18);
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--text);
+      padding: 14px 16px;
+      font: inherit;
+      transition: border-color 180ms ease, transform 180ms ease, background 180ms ease;
+    }
+
+    .field input::placeholder,
+    .field textarea::placeholder {
+      color: #6f86a8;
+    }
+
+    .field input:focus,
+    .field textarea:focus {
+      outline: none;
+      border-color: rgba(121, 240, 255, 0.64);
+      background: rgba(255, 255, 255, 0.06);
+      transform: translateY(-1px);
+    }
+
+    .field textarea {
+      min-height: 120px;
+      resize: vertical;
+    }
+
+    .submit-btn {
+      border: 0;
+      border-radius: 18px;
+      padding: 16px 18px;
+      color: #04101b;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+      background:
+        linear-gradient(135deg, var(--warm) 0%, #fff1a8 20%, var(--accent) 100%);
+      transition: transform 180ms ease, box-shadow 180ms ease, opacity 180ms ease;
+      box-shadow: 0 14px 32px rgba(0, 199, 255, 0.2);
+    }
+
+    .submit-btn:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 18px 38px rgba(0, 199, 255, 0.28);
+    }
+
+    .submit-btn:disabled {
+      cursor: wait;
+      opacity: 0.72;
+    }
+
+    .message {
+      display: none;
+      margin-top: 16px;
+      padding: 14px 16px;
+      border-radius: 16px;
+      border: 1px solid transparent;
+      line-height: 1.6;
+    }
+
+    .message.success {
+      display: block;
+      color: #e8fff0;
+      border-color: rgba(158, 240, 177, 0.3);
+      background: rgba(49, 127, 72, 0.22);
+    }
+
+    .message.error {
+      display: block;
+      color: #ffe9e9;
+      border-color: rgba(255, 159, 159, 0.28);
+      background: rgba(157, 52, 52, 0.22);
+    }
+
+    .sections {
+      display: grid;
+      gap: 24px;
+      margin-top: 24px;
+    }
+
+    .section {
+      padding: 32px;
+      animation: rise 980ms ease forwards;
+    }
+
+    .cards,
+    .timeline {
+      display: grid;
+      gap: 16px;
+      margin-top: 22px;
+    }
+
+    .cards {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .card,
+    .timeline-item {
+      border-radius: 22px;
+      border: 1px solid rgba(142, 188, 255, 0.14);
+      background: rgba(255, 255, 255, 0.03);
+      padding: 20px;
+    }
+
+    .card strong,
+    .timeline-item strong {
+      display: block;
+      margin-bottom: 10px;
+      color: var(--text);
+      font-size: 1.02rem;
+    }
+
+    .card p,
+    .timeline-item p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    .timeline {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .timeline-item time {
+      display: inline-block;
+      margin-bottom: 12px;
+      color: var(--warm);
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 0.92rem;
+    }
+
+    .footer-note {
+      margin-top: 18px;
+      color: #86a0c0;
+      font-size: 0.92rem;
+      line-height: 1.7;
+    }
+
+    @keyframes rise {
+      from {
+        opacity: 0;
+        transform: translateY(24px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @media (max-width: 960px) {
+      .hero {
+        grid-template-columns: 1fr;
+      }
+
+      .cards,
+      .timeline,
+      .hero-grid {
+        grid-template-columns: 1fr;
+      }
+
+      h1 {
+        max-width: none;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .page {
+        width: min(100% - 20px, 1180px);
+        padding: 16px 0 32px;
+      }
+
+      .hero-copy,
+      .registration,
+      .section {
+        padding: 22px;
+        border-radius: 22px;
+      }
+
+      h1 {
+        font-size: 2.5rem;
+      }
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <h2>提交数据到 SeaTable</h2>
-        <form id="dataForm">
-            <div class="form-group">
-                <label>姓名111</label>
-                <input type="text" name="姓名" required placeholder="请输入姓名">
-            </div>
-            <div class="form-group">
-                <label>邮箱</label>
-                <input type="email" name="邮箱" required placeholder="请输入邮箱">
-            </div>
-            <div class="form-group">
-                <label>备注</label>
-                <textarea name="备注" placeholder="请输入备注"></textarea>
-            </div>
-            <button type="submit">提交数据</button>
+  <main class="page">
+    <section class="hero">
+      <article class="panel hero-copy">
+        <span class="eyebrow">Chip Talk 2026</span>
+        <div>
+          <h1>芯片前沿演讲活动</h1>
+          <p class="subtitle">
+            一次聚焦芯片架构、先进封装与产业落地的技术交流活动。页面面向研发工程师、硬件团队、投资与产业合作伙伴开放报名。
+          </p>
+        </div>
+
+        <div class="hero-grid">
+          <div class="stat">
+            <strong>主题方向</strong>
+            <span>RISC-V、Chiplet、先进封装、边缘计算芯片</span>
+          </div>
+          <div class="stat">
+            <strong>参与对象</strong>
+            <span>芯片设计、EDA、硬件研发、产业合作团队</span>
+          </div>
+          <div class="stat">
+            <strong>报名方式</strong>
+            <span>在线登记，提交后自动写入 SeaTable 报名表</span>
+          </div>
+        </div>
+
+        <div class="bullet-row">
+          <span>架构演进</span>
+          <span>算力系统</span>
+          <span>封装工艺</span>
+          <span>生态合作</span>
+        </div>
+      </article>
+
+      <aside class="panel registration" id="signup">
+        <span class="chip-tag">Registration</span>
+        <h2>在线报名</h2>
+        <p>
+          填写基本信息后点击提交，报名数据会直接写入 SeaTable 的 `Table1` 表。
+        </p>
+
+        <form id="signupForm">
+          <div class="field">
+            <label for="fullName">姓名</label>
+            <input
+              id="fullName"
+              name="fullName"
+              type="text"
+              autocomplete="name"
+              required
+              placeholder="请输入报名人姓名"
+            >
+          </div>
+
+          <div class="field">
+            <label for="email">邮箱</label>
+            <input
+              id="email"
+              name="email"
+              type="email"
+              autocomplete="email"
+              required
+              placeholder="请输入常用邮箱"
+            >
+          </div>
+
+          <div class="field">
+            <label for="notes">备注</label>
+            <textarea
+              id="notes"
+              name="notes"
+              placeholder="可填写公司、职位、希望交流的技术方向"
+            ></textarea>
+          </div>
+
+          <button class="submit-btn" id="submitBtn" type="submit">提交报名</button>
         </form>
-        <div id="message" class="message"></div>
-    </div>
 
-    <script>
-        // 你的配置（已填好）
-        const uuid = "0d5c6931-3e02-461d-b2a8-deabf5fdfb50";
-        const token = "3037c5b5992892a0febdb912860368b9705c07a1";
+        <div id="message" class="message" role="status" aria-live="polite"></div>
+        <p class="footer-note">
+          当前实现为静态页面直连 SeaTable，适合快速上线验证流程。若页面将长期公开，建议后续改成服务端代理，避免令牌暴露。
+        </p>
+      </aside>
+    </section>
 
-        const form = document.getElementById("dataForm");
-        const msg = document.getElementById("message");
+    <section class="sections">
+      <article class="panel section">
+        <h2>活动看点</h2>
+        <p class="section-intro">
+          这不是泛泛而谈的行业分享，而是围绕真实芯片产品路径展开的技术演讲与现场交流。
+        </p>
 
-        form.addEventListener("submit", async e => {
-            e.preventDefault();
-            msg.style.display = "none";
+        <div class="cards">
+          <div class="card">
+            <strong>架构到产品</strong>
+            <p>从处理器架构选择、功耗与性能权衡，到芯片定义如何真正映射到产品落地节奏。</p>
+          </div>
+          <div class="card">
+            <strong>先进封装趋势</strong>
+            <p>围绕 Chiplet、2.5D/3D 封装、带宽互连与制造协同，讨论下一阶段系统集成能力。</p>
+          </div>
+          <div class="card">
+            <strong>产业协同机会</strong>
+            <p>从设计、验证、制造到应用场景，梳理合作接口，帮助参会者快速建立有效连接。</p>
+          </div>
+        </div>
+      </article>
 
-            try {
-                // ✅ 这是唯一不会跨域的官方表单接口
-                const res = await fetch(`https://cloud.seatable.cn/api/v1/dtable/${uuid}/forms/${token}/submit/`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        rows: [Object.fromEntries(new FormData(form))]
-                    })
-                });
+      <article class="panel section">
+        <h2>议程建议</h2>
+        <p class="section-intro">
+          下面是一版可直接用于上线的议程结构。你后续只需要把时间、嘉宾和地点替换成真实信息。
+        </p>
 
-                if (res.ok) {
-                    msg.className = "message success";
-                    msg.textContent = "✅ 提交成功！";
-                    form.reset();
-                } else {
-                    throw new Error("表格列名不匹配，请检查：姓名、邮箱、备注");
-                }
-            } catch (e) {
-                msg.className = "message error";
-                msg.textContent = "❌ 提交失败：" + e.message;
-            }
-            msg.style.display = "block";
-        });
-    </script>
+        <div class="timeline">
+          <div class="timeline-item">
+            <time>13:30</time>
+            <strong>签到与交流</strong>
+            <p>开放签到，展示芯片样片、开发板与应用案例。</p>
+          </div>
+          <div class="timeline-item">
+            <time>14:00</time>
+            <strong>主题演讲一</strong>
+            <p>下一代芯片架构路线：性能、功耗与软件生态的平衡。</p>
+          </div>
+          <div class="timeline-item">
+            <time>15:00</time>
+            <strong>主题演讲二</strong>
+            <p>Chiplet 与先进封装的工程挑战，以及量产导入中的关键约束。</p>
+          </div>
+          <div class="timeline-item">
+            <time>16:00</time>
+            <strong>圆桌问答</strong>
+            <p>围绕产业合作、项目需求与技术路径进行现场交流。</p>
+          </div>
+        </div>
+      </article>
+    </section>
+  </main>
+
+  <script>
+    const SEATABLE_CONFIG = {
+      server: 'https://cloud.seatable.cn',
+      dtableUuid: '0d5c6931-3e02-461d-b2a8-deabf5fdfb50',
+      submitToken: '3037c5b5992892a0febdb912860368b9705c07a1',
+      tableName: 'Table1'
+    };
+
+    const form = document.getElementById('signupForm');
+    const messageEl = document.getElementById('message');
+    const submitBtn = document.getElementById('submitBtn');
+
+    function showMessage(type, text) {
+      messageEl.className = `message ${type}`;
+      messageEl.textContent = text;
+    }
+
+    function buildPayload() {
+      return {
+        ['\u59d3\u540d']: document.getElementById('fullName').value.trim(),
+        ['\u90ae\u7bb1']: document.getElementById('email').value.trim(),
+        ['\u5907\u6ce8']: document.getElementById('notes').value.trim()
+      };
+    }
+
+    async function submitRegistration(rowData) {
+      const response = await fetch(
+        `${SEATABLE_CONFIG.server}/api/v1/dtable/${SEATABLE_CONFIG.dtableUuid}/forms/${SEATABLE_CONFIG.submitToken}/submit/`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            rows: [rowData]
+          })
+        }
+      );
+
+      if (!response.ok) {
+        let detail = '提交失败，请检查 SeaTable 配置或接口权限。';
+
+        try {
+          const errorData = await response.json();
+          detail = errorData.error_msg || detail;
+        } catch (error) {
+          detail = `${detail} HTTP ${response.status}`;
+        }
+
+        throw new Error(detail);
+      }
+    }
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      showMessage('', '');
+
+      const rowData = buildPayload();
+      if (!rowData['\u59d3\u540d'] || !rowData['\u90ae\u7bb1']) {
+        showMessage('error', '姓名和邮箱为必填项。');
+        return;
+      }
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = '提交中...';
+
+      try {
+        await submitRegistration(rowData);
+        showMessage('success', '报名已提交成功，我们会根据你填写的邮箱与您联系。');
+        form.reset();
+      } catch (error) {
+        showMessage('error', error.message || '提交失败，请稍后再试。');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = '提交报名';
+      }
+    });
+  </script>
 </body>
 </html>

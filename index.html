@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SeaTable 数据提交</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+        body {
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 0 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h2 {
+            text-align: center;
+            margin-bottom: 25px;
+            color: #333;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #555;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        button {
+            width: 100%;
+            padding: 14px;
+            background: #0070e0;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background: #005bb5;
+        }
+        .message {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            text-align: center;
+            display: none;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            display: block;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>提交数据到 SeaTable</h2>
+        <form id="dataForm">
+            <div class="form-group">
+                <label>姓名</label>
+                <input type="text" id="name" required placeholder="请输入姓名">
+            </div>
+            <div class="form-group">
+                <label>邮箱</label>
+                <input type="email" id="email" required placeholder="请输入邮箱">
+            </div>
+            <div class="form-group">
+                <label>备注信息</label>
+                <textarea id="remark" placeholder="请输入备注内容"></textarea>
+            </div>
+            <button type="submit">提交数据</button>
+        </form>
+        <div id="message" class="message"></div>
+    </div>
+
+    <script>
+        // ===================== 你的 SeaTable 配置（已填入你提供的信息）=====================
+        const SEATABLE_SERVER = "https://cloud.seatable.cn"; // 国内版
+        const TABLE_UUID = "0d5c6931-3e02-461d-b2a8-deabf5fdfb50";
+        const API_TOKEN = "3037c5b5992892a0febdb912860368b9705c07a1";
+
+        // 提交表单
+        document.getElementById('dataForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const messageEl = document.getElementById('message');
+            
+            // 获取表单数据
+            const formData = {
+                姓名: document.getElementById('name').value,
+                邮箱: document.getElementById('email').value,
+                备注: document.getElementById('remark').value
+            };
+
+            try {
+                // 调用 SeaTable API 插入数据
+                const response = await fetch(`${SEATABLE_SERVER}/api/v1/dtable/app/rows/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Token ${API_TOKEN}`
+                    },
+                    body: JSON.stringify({
+                        table_name: "Table1", // 默认表名，如你修改过请替换
+                        dtable_uuid: TABLE_UUID,
+                        row: formData
+                    })
+                });
+
+                const result = await response.json();
+                
+                if (response.ok) {
+                    messageEl.className = 'message success';
+                    messageEl.textContent = '✅ 数据提交成功！';
+                    document.getElementById('dataForm').reset(); // 清空表单
+                } else {
+                    throw new Error(result.error?.message || '提交失败，请检查配置');
+                }
+            } catch (err) {
+                messageEl.className = 'message error';
+                messageEl.textContent = `❌ 提交失败：${err.message}`;
+            }
+        });
+    </script>
+</body>
+</html>

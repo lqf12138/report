@@ -442,7 +442,7 @@
         <span class="chip-tag">Registration</span>
         <h2>在线报名</h2>
         <p>
-          填写基本信息后点击提交，报名数据会直接写入 SeaTable 的 `Table1` 表。
+          填写基本信息后点击提交，报名数据会通过一个轻量代理接口写入 SeaTable 的 `Table1` 表。
         </p>
 
         <form id="signupForm">
@@ -484,7 +484,7 @@
 
         <div id="message" class="message" role="status" aria-live="polite"></div>
         <p class="footer-note">
-          当前实现为静态页面直连 SeaTable，适合快速上线验证流程。若页面将长期公开，建议后续改成服务端代理，避免令牌暴露。
+          GitHub Pages 是纯静态托管，不能替你处理 SeaTable 的跨域限制。当前版本已改成前端调用代理接口，令牌不再暴露在页面源码中。
         </p>
       </aside>
     </section>
@@ -545,11 +545,8 @@
   </main>
 
   <script>
-    const SEATABLE_CONFIG = {
-      server: 'https://cloud.seatable.cn',
-      dtableUuid: '0d5c6931-3e02-461d-b2a8-deabf5fdfb50',
-      submitToken: '3037c5b5992892a0febdb912860368b9705c07a1',
-      tableName: 'Table1'
+    const APP_CONFIG = {
+      registrationApiUrl: 'https://chip-talk-registration.lqf12138-chip-event.workers.dev'
     };
 
     const form = document.getElementById('signupForm');
@@ -563,32 +560,34 @@
 
     function buildPayload() {
       return {
-        ['\u59d3\u540d']: document.getElementById('fullName').value.trim(),
-        ['\u90ae\u7bb1']: document.getElementById('email').value.trim(),
-        ['\u5907\u6ce8']: document.getElementById('notes').value.trim()
+        name: document.getElementById('fullName').value.trim(),
+        email: document.getElementById('email').value.trim(),
+        notes: document.getElementById('notes').value.trim()
       };
     }
 
-    async function submitRegistration(rowData) {
+    async function submitRegistration(payload) {
+      if (!APP_CONFIG.registrationApiUrl || APP_CONFIG.registrationApiUrl.includes('your-worker-subdomain')) {
+        throw new Error('报名接口地址还没有配置，请先部署 Worker 并更新 registrationApiUrl。');
+      }
+
       const response = await fetch(
-        `${SEATABLE_CONFIG.server}/api/v1/dtable/${SEATABLE_CONFIG.dtableUuid}/forms/${SEATABLE_CONFIG.submitToken}/submit/`,
+        APP_CONFIG.registrationApiUrl,
         {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify({
-            rows: [rowData]
-          })
+          body: JSON.stringify(payload)
         }
       );
 
       if (!response.ok) {
-        let detail = '提交失败，请检查 SeaTable 配置或接口权限。';
+        let detail = '提交失败，请检查代理接口或 SeaTable 配置。';
 
         try {
           const errorData = await response.json();
-          detail = errorData.error_msg || detail;
+          detail = errorData.error || errorData.message || detail;
         } catch (error) {
           detail = `${detail} HTTP ${response.status}`;
         }
@@ -601,8 +600,8 @@
       event.preventDefault();
       showMessage('', '');
 
-      const rowData = buildPayload();
-      if (!rowData['\u59d3\u540d'] || !rowData['\u90ae\u7bb1']) {
+      const payload = buildPayload();
+      if (!payload.name || !payload.email) {
         showMessage('error', '姓名和邮箱为必填项。');
         return;
       }
@@ -611,7 +610,7 @@
       submitBtn.textContent = '提交中...';
 
       try {
-        await submitRegistration(rowData);
+        await submitRegistration(payload);
         showMessage('success', '报名已提交成功，我们会根据你填写的邮箱与您联系。');
         form.reset();
       } catch (error) {
